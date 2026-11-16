@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>偉大航道全景圖：《航海王》世界觀架構解析</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <style>
+    /* =========================================================
+       三套《航海王》主題（預設：風格一 偉大航道・古典海圖羊皮紙風）
+       ========================================================= */
+    :root, [data-theme="parchment"] {
+      --bg-outer: #DCD0B8;
+      --bg-slide: #F7F0E0;
+      --bg-card: #EFE4CC;
+      --grid-color: rgba(138, 102, 56, 0.11);
+      --text-primary: #2A1B10;
+      --text-secondary: #533B28;
+      --accent-main: #B53028;      /* 草帽赤紅 */
+      --accent-sub: #9E6E2B;       /* 羅盤古銅金 */
+      --border-color: #C4AE88;
+      --badge-bg: #E8DBC0;
+      --gap-bg: rgba(181, 48, 40, 0.08);
+      --font-heading: "Noto Serif TC", "Songti TC", "PMingLiU", Georgia, serif;
+      --font-body: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+    }
+
+    [data-theme="marine"] {
+      --bg-outer: #E2E8F0;
+      --bg-slide: #FFFFFF;
+      --bg-card: #F8FAFC;
+      --grid-color: rgba(15, 41, 74, 0.05);
+      --text-primary: #0F294A;
+      --text-secondary: #334155;
+      --accent-main: #0284C7;
+      --accent-sub: #1E3A8A;
+      --border-color: #CBD5E1;
+      --badge-bg: #E0F2FE;
+      --gap-bg: rgba(220, 38, 38, 0.06);
+      --font-heading: "Noto Sans TC", "PingFang TC", sans-serif;
+      --font-body: "Noto Sans TC", "PingFang TC", sans-serif;
+    }
+
+    [data-theme="newworld"] {
+      --bg-outer: #05070B;
+      --bg-slide: #0B101B;
+      --bg-card: #131B2E;
+      --grid-color: rgba(56, 189, 248, 0.06);
+      --text-primary: #F8FAFC;
+      --text-secondary: #CBD5E1;
+      --accent-main: #E11D48;
+      --accent-sub: #38BDF8;
+      --border-color: #27354F;
+      --badge-bg: #1E293B;
+      --gap-bg: rgba(225, 29, 72, 0.14);
+      --font-heading: "Noto Sans TC", "PingFang TC", sans-serif;
+      --font-body: "Noto Sans TC", "PingFang TC", sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-outer);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 64px 16px 32px;
+      transition: background 0.3s ease;
+    }
+
+    /* 頂部控制列：確保最高 z-index 與明確可點擊性 */
+    .topbar {
+      position: fixed;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(1220px, 95vw);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      z-index: 9999;
+      font-size: 13px;
+    }
+
+    .theme-switcher, .controls-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-slide);
+      padding: 5px 10px;
+      border-radius: 22px;
+      border: 1.5px solid var(--border-color);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+
+    .theme-btn, .ctrl-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-primary);
+      padding: 5px 12px;
+      border-radius: 16px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      user-select: none;
+      transition: all 0.15s ease;
+    }
+
+    .theme-btn:hover, .ctrl-btn:hover {
+      border-color: var(--accent-main);
+      background: var(--badge-bg);
+    }
+
+    .theme-btn.active, .ctrl-btn.primary {
+      background: var(--accent-main);
+      color: #FFFFFF;
+    }
+
+    /* 16:9 簡報主畫布 */
+    .deck-container {
+      width: min(1220px, 95vw);
+      height: min(690px, 82vh);
+      position: relative;
+      z-index: 1;
+    }
+
+    .slide {
+      display: none;
+      width: 100%;
+      height: 100%;
+      background-color: var(--bg-slide);
+      /* 海圖經緯度網格 + 羅盤放射細紋 */
+      background-image:
+        radial-gradient(circle at 88% 18%, rgba(181, 48, 40, 0.06) 0%, transparent 32%),
+        linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
+      background-size: 100% 100%, 40px 40px, 40px 40px;
+      border: 2.5px solid var(--border-color);
+      border-radius: 14px;
+      padding: 40px 54px 46px;
+      box-shadow: 0 20px 45px rgba(42, 27, 16, 0.18);
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow-y: auto;
+    }
+
+    .slide.active { display: flex; }
+
+    /* 古典海圖雙線內框 + 四角羅盤飾角 */
+    .slide::before {
+      content: "";
+      position: absolute;
+      inset: 10px;
+      border: 1.5px solid var(--border-color);
+      border-radius: 8px;
+      pointer-events: none;
+      opacity: 0.85;
+    }
+
+    /* 頁首標頭 */
+    .slide-header {
+      border-bottom: 2px solid var(--accent-sub);
+      padding-bottom: 10px;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 12px;
+    }
+
+    .saga-tag {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 1.8px;
+      color: var(--accent-main);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .chapter-badge {
+      font-size: 12px;
+      font-weight: 700;
+      background: var(--badge-bg);
+      border: 1px solid var(--accent-sub);
+      color: var(--text-primary);
+      padding: 4px 10px;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+
+    h1 {
+      font-family: var(--font-heading);
+      font-size: 38px;
+      line-height: 1.25;
+      color: var(--text-primary);
+    }
+
+    h2 {
+      font-family: var(--font-heading);
+      font-size: 25px;
+      color: var(--text-primary);
+    }
+
+    .slide-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 14px;
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--text-secondary);
+    }
+
+    /* 封面懸賞令／航海日誌專屬設計 */
+    .cover-center {
+      text-align: center;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+    }
+
+    .wanted-seal {
+      display: inline-block;
+      border: 2.5px solid var(--accent-main);
+      color: var(--accent-main);
+      padding: 5px 18px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      font-size: 13px;
+      border-radius: 4px;
+      background: rgba(181, 48, 40, 0.05);
+    }
+
+    .cover-subtitle {
+      font-size: 19px;
+      max-width: 780px;
+      color: var(--text-secondary);
+    }
+
+    .meta-pills {
+      display: flex;
+      gap: 10px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .pill {
+      background: var(--badge-bg);
+      border: 1px solid var(--border-color);
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    /* 雙欄與三欄卡片 */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    .three-col {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-left: 4px solid var(--accent-sub);
+      border-radius: 8px;
+      padding: 15px 18px;
+    }
+
+    .card h3 {
+      font-family: var(--font-heading);
+      font-size: 18px;
+      color: var(--accent-main);
+      margin-bottom: 8px;
+    }
+
+    ul { padding-left: 20px; }
+    li { margin-bottom: 6px; }
+    strong { color: var(--text-primary); }
+
+    /* 公式高亮框 */
+    .formula-box {
+      background: var(--bg-card);
+      border: 1.5px solid var(--accent-sub);
+      border-left: 5px solid var(--accent-main);
+      padding: 13px 20px;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 18px;
+      color: var(--text-primary);
+    }
+
+    /* 知識缺口警示框 */
+    .gap-box {
+      background: var(--gap-bg);
+      border: 1.5px dashed var(--accent-main);
+      padding: 9px 15px;
+      border-radius: 6px;
+      font-size: 13.5px;
+      color: var(--text-primary);
+    }
+
+    /* 學術三線表 + Fandom 篇章代表色條 */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      background: var(--bg-card);
+    }
+    th {
+      border-top: 2px solid var(--text-primary);
+      border-bottom: 1.5px solid var(--text-primary);
+      padding: 8px 10px;
+      text-align: left;
+      color: var(--text-primary);
+      font-weight: 800;
+    }
+    td {
+      padding: 7px 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    tr:last-child td { border-bottom: 2px solid var(--text-primary); }
+
+    .saga-dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+
+    /* 下載文獻卡片 */
+    .ref-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 12px 18px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+    .dl-btn {
+      background: var(--accent-main);
+      color: #FFFFFF;
+      text-decoration: none;
+      padding: 7px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .dl-btn:hover { opacity: 0.9; }
+
+    /* 頁尾與紀錄指針進度列 */
+    .slide-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--text-secondary);
+      border-top: 1px solid var(--border-color);
+      padding-top: 8px;
+      margin-top: 10px;
+      gap: 12px;
+    }
+
+    .nav-dots {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--border-color);
+      cursor: pointer;
+      border: none;
+    }
+    .dot.active {
+      background: var(--accent-main);
+      transform: scale(1.25);
+    }
+
+    .progress-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      height: 5px;
+      background: var(--accent-main);
+      transition: width 0.25s ease;
+      z-index: 9999;
+    }
+
+    /* 講者備忘錄抽屜 */
+    .notes-drawer {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(1120px, 92vw);
+      background: var(--bg-slide);
+      border: 2px solid var(--accent-main);
+      border-radius: 10px;
+      padding: 14px 20px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.28);
+      z-index: 10000;
+      font-size: 14px;
+    }
+    .notes-drawer.open { display: block; }
+    .notes-title { font-weight: 800; color: var(--accent-main); margin-bottom: 4px; }
+
+    @media print {
+      body { background: #FFFFFF; padding: 0; display: block; }
+      .topbar, .progress-bar, .notes-drawer, .nav-dots { display: none !important; }
+      .deck-container { width: 100%; height: auto; }
+      .slide {
+        display: flex !important;
+        width: 100%;
+        height: 100vh;
+        page-break-after: always;
+        box-shadow: none;
+        border-radius: 0;
+      }
+    }
+  </style>
+</head>
+<body data-theme="parchment">
+
+  <!-- 頂部控制列 -->
+  <div class="topbar">
+    <div class="theme-switcher">
+      <button type="button" class="theme-btn active" data-set-theme="parchment">🧭 偉大航道海圖</button>
+      <button type="button" class="theme-btn" data-set-theme="marine">⚓ 海軍實驗室白底</button>
+      <button type="button" class="theme-btn" data-set-theme="newworld">🌊 新世界暗黑</button>
+    </div>
+    <div class="controls-right">
+      <button type="button" class="ctrl-btn" id="btnNotes">📝 講者筆記 (N)</button>
+      <button type="button" class="ctrl-btn" id="btnPrint">🖨️ 匯出 PDF</button>
+      <button type="button" class="ctrl-btn" id="btnPrev">← 上一頁</button>
+      <span id="pageIndicator" style="font-weight:800; padding:0 6px; color:var(--accent-main);">1 / 8</span>
+      <button type="button" class="ctrl-btn primary" id="btnNext">下一頁 →</button>
+    </div>
+  </div>
+
+  <!-- 簡報主畫布 -->
+  <div class="deck-container">
+
+    <!-- Slide 1: 封面 -->
+    <section class="slide active" data-notes="本簡報嚴格依據目前知識庫已收錄的《航海王》Fandom 條目編纂（涵蓋 3,240 個條目導航、11 大故事篇章、26 部短期集中封面連載與 16 個動畫原創篇）。">
+      <div class="slide-body cover-center">
+        <div class="wanted-seal">LOG POSE ARCHIVE · STRICT WIKI-GROUNDED EDITION</div>
+        <h1>偉大航道全景圖：《航海王》世界觀架構解析</h1>
+        <p class="cover-subtitle">基於 Fandom 百科館藏之海洋地理板塊、四大勢力格局、惡魔果實與霸氣體系、以及 11 大故事篇章結構拆解</p>
+        <div class="meta-pills">
+          <span class="pill">📜 百科規模：3,240 條目 / 56,757 次編輯</span>
+          <span class="pill">📖 最新進度：漫畫 1179 話（Vol. 114）/ 動畫 1156 集</span>
+          <span class="pill">🧭 預設主題：偉大航道古典海圖風</span>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>溯源：[[航海王wiki首頁]] · [[2026-11-16-OnePiece-StoryArcs-Fandom]]</span>
+        <div class="nav-dots" id="dots1"></div>
+        <span>Slide 1 / 8</span>
+      </div>
+    </section>
+
+    <!-- Slide 2: 海洋地理與多維度空間架構 -->
+    <section class="slide" data-notes="地理結構整理自首頁世界觀選單與故事篇章（東海篇、阿拉巴斯坦篇、空島篇、水之七島篇、魚人島篇、蛋頭島與艾爾巴夫篇）。">
+      <div class="slide-header">
+        <div>
+          <div class="saga-tag">01 // WORLD GEOGRAPHY & NAVIGATION</div>
+          <h2>海洋地理：由「四大海域」匯聚至「新世界」的航線架構</h2>
+        </div>
+        <span class="chapter-badge">地點：東方藍 · 偉大的航道 · 新世界</span>
+      </div>
+      <div class="slide-body">
+        <div class="two-col">
+          <div class="card">
+            <h3>🌊 水平海域與航行法則</h3>
+            <ul>
+              <li><strong>四大海域出發點</strong>：以<strong>東方藍（East Blue）</strong>（風車村、謝爾茲鎮、羅格鎮）為起點，並提及香吉士出生地<strong>北海（North Blue）</strong>。</li>
+              <li><strong>偉大的航道（前半段）</strong>：經<strong>顛倒山</strong>進入，磁場混亂須依賴<strong>紀錄指針（Log Pose）</strong>與永久指針導航。</li>
+              <li><strong>新世界（New World）</strong>：跨越紅土大陸、潛入深海<strong>魚人島</strong>後抵達的後半段海域（含龐克哈薩特、多雷斯羅薩、佐烏、萬國、和之國、蛋頭島、艾爾巴夫）。</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>☁️ 垂直空間與特殊據點</h3>
+            <ul>
+              <li><strong>白海與空島（Skypiea）</strong>：萬米高空海雲之上的空域，須搭乘突發性<strong>上升海流（Knock Up Stream）</strong>前往。</li>
+              <li><strong>月球（Fairy Vearth）</strong>：艾涅爾駕駛方舟箴言抵達的宇宙空間，揭示空島人與香狄亞的古代淵源。</li>
+              <li><strong>世界政府三大重鎮</strong>：海軍本部<strong>馬林福特</strong>、司法島<strong>愛尼愛斯大廳</strong>、深海大監獄<strong>推進城</strong>與聖地<strong>馬力喬亞</strong>。</li>
+            </ul>
+          </div>
+        </div>
+        <div class="gap-box">
+          <strong>[Wiki 知識缺口]</strong>：目前知識庫尚未攝取獨立《地點（Locations）》或《無風帶（Calm Belt）》專題頁面，故西海、南海具體島嶼分布待後續補充。
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>溯源：[[2026-11-16-OnePiece-StoryArcs-Fandom]]</span>
+        <div class="nav-dots"></div>
+        <span>Slide 2 / 8</span>
+      </div>
+    </section>
+
+    <!-- Slide 3: 多元種族與世界政府統治架構 -->
+    <section class="slide" data-notes="種族與世界政府最高層資訊提取自魚人島篇、夏波帝諸島篇、世界會議篇與蛋頭島／艾爾巴夫篇摘要。">
+      <div class="slide-header">
+        <div>
+          <div class="saga-tag">02 // RACES & WORLD GOVERNMENT</div>
+          <h2>世界秩序：多元種族生態與世界政府最高權力金字塔</h2>
+        </div>
+        <span class="chapter-badge">組織：世界政府 · 海軍 · 革命軍</span>
+      </div>
+      <div class="slide-body">
+        <div class="two-col">
+          <div class="card">
+            <h3>👑 世界政府權力核心</h3>
+            <ul>
+              <li><strong>最高統治者</strong>：端坐於虛空王座上的<strong>奈羅納·伊姆聖（Nerona Imu）</strong>。</li>
+              <li><strong>最高執行與神族武裝</strong>：<strong>五老星（Five Elders）</strong>（含費加蘭德·加林聖遞補）、<strong>神之騎士團（Knights of God）</strong>與世界貴族<strong>天龍人</strong>。</li>
+              <li><strong>諜報與科學機構</strong>：CP9 / CP0 特務機關、天才科學家<strong>貝加龐克（Dr. Vegapunk）</strong>及其六個分身（Satellites）。</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>🧬 多元種族與文明分佈</h3>
+            <ul>
+              <li><strong>海底與空域種族</strong>：<strong>魚人族（Fish-Men）</strong>、<strong>人魚族（Merfolk）</strong>與空島原住民（香狄亞／空島人）。</li>
+              <li><strong>特殊血統與族群</strong>：<strong>巨人族（Giants，艾爾巴夫）</strong>、<strong>毛皮族（Mink Tribe，佐烏）</strong>、<strong>巴卡尼亞族（Buccaneers，大熊血統）</strong>與露娜利亞族特徵（熾天使）。</li>
+              <li><strong>非人智慧生物</strong>：電話蟲（Den Den Mushi）、海王類與功夫海牛等特有生態。</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>溯源：[[2026-11-16-OnePiece-StoryArcs-Fandom]]（Egghead & Elbaph Arcs）</span>
+        <div class="nav-dots"></div>
+        <span>Slide 3 / 8</span>
+      </div>
+    </section>
+
+    <!-- Slide 4: 海上三大勢力與陣營演變 -->
+    <section class="slide" data-notes="展現從頂上戰爭、世界會議廢除七武海，到和之國戰役後新四皇與十字公會成立的動態勢力更迭。">
+      <div class="slide-header">
+        <div>
+          <div class="saga-tag">03 // THREE GREAT POWERS & FACTIONS</div>
+          <h2>勢力角力：海上「三大勢力」的崩解與新時代洗牌</h2>
+        </div>
+        <span class="chapter-badge">組織：四皇 · 七武海 · 海軍</span>
+      </div>
+      <div class="slide-body">
+        <table>
+          <thead>
+            <tr>
+              <th>勢力陣營</th>
+              <th>舊時代格局（頂上戰爭前）</th>
+              <th>新時代格局（和之國與最終章）</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>四皇（Four Emperors）</strong></td>
+              <td>白鬍子（艾德華·紐蓋特）、紅髮傑克、百獸凱多、BIG MOM（夏洛特·莉莉）</td>
+              <td><strong>紅髮傑克、黑鬍子（馬歇爾·D·汀奇）、草帽魯夫、千兩道化巴其</strong>（十字公會）</td>
+            </tr>
+            <tr>
+              <td><strong>王下七武海</strong></td>
+              <td>鷹眼、克洛克達爾、多佛朗明哥、大熊、女帝漢考克、月光摩利亞、吉貝爾（後補黑鬍子、羅、巴其）</td>
+              <td><strong>制度正式廢除</strong>（世界會議決議），由貝加龐克研發之<strong>熾天使（Seraphim）</strong>取代戰力。</td>
+            </tr>
+            <tr>
+              <td><strong>海軍本部（Marines）</strong></td>
+              <td>元帥戰國；三大將（青雉庫贊、黃猿波爾薩利諾、赤犬盃）</td>
+              <td>新元帥<strong>赤犬（盃）</strong>；新大將藤虎（一笑）、綠牛（荒牧）；機密部隊 <strong>SWORD</strong> 活躍。</td>
+            </tr>
+            <tr>
+              <td><strong>革命軍與超新星</strong></td>
+              <td>蒙其·D·多拉格領導革命軍；夏波帝諸島 11 位超新星集結</td>
+              <td>革命軍宣戰天龍人（薩波目擊伊姆）；<strong>最惡世代</strong>分化（草帽大船團成立，羅與基德海賊團遭重創）。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="slide-footer">
+        <span>溯源：[[2026-11-16-OnePiece-StoryArcs-Fandom]]</span>
+        <div class="nav-dots"></div>
+        <span>Slide 4 / 8</span>
+      </div>
+    </section>
+
+    <!-- Slide 5: 超自然力量體系（惡魔果實 × 霸氣 × 科學武器） -->
+    <section class="slide" data-notes="歸納自惡魔果實專題導航與各篇章關鍵設定（含自然系、動物系幻獸種、人造果實 SMILE、果實覺醒與三色霸氣）。">
+      <div class="slide-header">
+        <div>
+          <div class="saga-tag">04 // POWER SYSTEMS & SCIENCE</div>
+          <h2>戰力維度：惡魔果實覺醒、三色霸氣與古代科學</h2>
+        </div>
+        <span class="chapter-badge">核心設定：惡魔果實 · 霸氣</span>
+      </div>
+      <div class="slide-body">
+        <div class="three-col">
+          <div class="card">
+            <h3>🍎 惡魔果實（Devil Fruits）</h3>
+            <ul>
+              <li><strong>三大正統系別</strong>：超人系（Paramecia）、動物系（Zoan，含稀有<strong>幻獸種</strong>）、自然系（Logia）。</li>
+              <li><strong>果實循環與覺醒</strong>：能力者死亡後果實於某處重生；高階者可達成<strong>覺醒</strong>（如魯夫橡膠果實覺醒為太陽神尼卡／五檔）。</li>
+              <li><strong>人造果實 SMILE</strong>：凱薩製造之人工動物系果實。</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>⚡ 三色霸氣（Haki）</h3>
+            <ul>
+              <li><strong>見聞色霸氣</strong>：感知氣息與預見未來（空島稱為「心網」）。</li>
+              <li><strong>武裝色霸氣</strong>：強化攻防並可觸及自然系能力者實體。</li>
+              <li><strong>霸王色霸氣</strong>：百萬人中僅一人具備的王者資質，可震懾弱者並纏繞攻擊。</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>⚙️ 特殊能力與科學造物</h3>
+            <ul>
+              <li><strong>萬物之聲</strong>：哥爾·D·羅傑與魯夫具備聆聽海王類與象主聲音的特殊能力。</li>
+              <li><strong>貝與天候棒</strong>：空島貝（Dials）與娜美融合宙斯的天候棒。</li>
+              <li><strong>傑爾馬 66 與海樓石</strong>：血統因子改造戰鬥服，以及克制果實能力者的海樓石（Seastone）。</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>溯源：[[航海王wiki首頁]] · [[2026-11-16-OnePiece-StoryArcs-Fandom]]</span>
+        <div class="nav-dots"></div>
+        <span>Slide 5 / 8</span>
+      </div>
+    </section>
+
+    <!-- Slide 6: 空白的 100 年與拉乎德爾航線公式 -->
+    <section class="slide" data-notes="整合阿拉巴斯坦篇、魚人島篇、佐烏篇、和之國篇與蛋頭島篇關於歷史本文、古代兵器與神之谷事件的關鍵紀錄。">
+      <div class="slide-header">
+        <div>
+          <div class="saga-tag">05 // VOID CENTURY & ANCIENT WEAPONS</div>
+          <h2>歷史謎團：空白的 100 年、歷史本文與三大古代兵器</h2>
+        </div>
+        <span class="chapter-badge">主線謎團：One Piece · D 之意志</span>
+      </div>
+      <div class="slide-body">
+        <div class="formula-box">
+          $$\text{最終之島（Laugh Tale）座標} = \bigcap_{k=1}^{4} \text{航線交匯點}\left(\text{路標歷史本文}_k\right)$$
+        </div>
+        <div class="two-col">
+          <div class="card">
+            <h3>🗿 歷史本文與進度</h3>
+            <ul>
+              <li><strong>空白的 100 年（Void Century）</strong>：世界政府嚴禁研究的八百年前歷史（貝加龐克於蛋頭島向全球廣播揭露部分真相）。</li>
+              <li><strong>路標歷史本文（Road Poneglyphs）</strong>：集齊 4 塊赤色石碑可定位拉乎德爾，草帽團已取得 <strong>3 塊</strong>（佐烏、蛋糕島、和之國）。</li>
+              <li><strong>神之谷事件（God Valley）</strong>：涉及洛克斯海賊團、羅傑、卡普與費加蘭德家族的關鍵歷史戰役。</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>🔱 古代兵器與傳承</h3>
+            <ul>
+              <li><strong>三大古代兵器</strong>：<strong>冥王（Pluton）</strong>（和之國地下）、<strong>海王（Poseidon）</strong>（人魚公主白星）、<strong>天王（Uranus）</strong>。</li>
+              <li><strong>關鍵傳承符號</strong>：八百年前的<strong>喬伊波伊（Joy Boy）</strong>、太陽神尼卡、<strong>D 之意志（Will of D.）</strong>與世代相傳的草帽。</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>溯源：[[2026-11-16-OnePiece-StoryArcs-Fandom]]</span>
+        <div class="nav-dots"></div>
+        <span>Slide 6 / 8</span>
+      </div>
+    </section>
+
+    <!-- Slide 7: 敘事時間軸與 Fandom 篇章結構表 -->
+    <section class="slide" data-notes="完整對照你提供的 Fandom Wiki 故事篇章（Story Arcs）雙紀元 11 大篇章結構與扉頁連載體系。">
+      <div class="slide-header">
+        <div>
+          <div class="saga-tag">06 // CHRONOLOGY & SAGA TAXONOMY</div>
+          <h2>敘事時間軸：兩大紀元 × 11 大篇章與多線連載架構</h2>
+        </div>
+        <span class="chapter-badge">百科架構：Saga · Arc · 扉頁連載</span>
+      </div>
+      <div class="slide-body">
+        <table>
+          <thead>
+            <tr>
+              <th>紀元劃分</th>
+              <th>包含大篇章（Sagas）與 Fandom 識別色</th>
+              <th>正史篇章 (Canon Arcs)</th>
+              <th>漫畫話數 / 卷數區間</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>生存之海<br>（前半段）</strong></td>
+              <td>
+                <span class="saga-dot" style="background:#20B2AA;"></span>東海編 ·
+                <span class="saga-dot" style="background:#DAA520;"></span>阿拉巴斯坦編 ·
+                <span class="saga-dot" style="background:#228B22;"></span>空島編 ·
+                <span class="saga-dot" style="background:#191970;"></span>水之七島編 ·
+                <span class="saga-dot" style="background:#800080;"></span>恐怖三桅帆船編 ·
+                <span class="saga-dot" style="background:#A9A9A9;"></span>頂上戰爭編
+              </td>
+              <td>23 個 Arc</td>
+              <td>Ch. 1 – 597<br>(Vol. 1 – 61)</td>
+            </tr>
+            <tr>
+              <td><strong>最後之海<br>（新世界）</strong></td>
+              <td>
+                <span class="saga-dot" style="background:#4169E1;"></span>魚人島編 ·
+                <span class="saga-dot" style="background:#EE82EE;"></span>多雷斯羅薩編 ·
+                <span class="saga-dot" style="background:#FF00AF;"></span>蛋糕島編 ·
+                <span class="saga-dot" style="background:#DC143C;"></span>和之國編 ·
+                <span class="saga-dot" style="background:#000000;"></span>最終章（蛋頭島、艾爾巴夫）
+              </td>
+              <td>11+ 個 Arc<br>（連載中）</td>
+              <td>Ch. 598 – 1179+<br>(Vol. 61 – 114+)</td>
+            </tr>
+            <tr>
+              <td><strong>多維度旁支</strong></td>
+              <td><strong>短期集中封面連載（26 部正史支線）</strong> ＋ <strong>動畫原創篇（16 個 Filler Arc）</strong> ＋ 特別篇／跨界合作</td>
+              <td>獨立時間線</td>
+              <td>穿插於各話扉頁與動畫集數間</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="slide-footer">
+        <span>溯源：[[2026-11-16-OnePiece-StoryArcs-Fandom]] · [[2026-11-16-Hierarchical-Wiki-Schema-From-Fandom]]</span>
+        <div class="nav-dots"></div>
+        <span>Slide 7 / 8</span>
+      </div>
+    </section>
+
+    <!-- Slide 8: 建議補充文獻（可點擊取得 Raw 並執行 Wiki 化） -->
+    <section class="slide" data-notes="本頁文獻尚未進入 wiki/ 正文，點擊右側按鈕可直接開啟 Fandom Raw 原始碼頁面，複製貼回對話框即可自動存入 raw/ 並擴充知識庫。">
+      <div class="slide-header">
+        <div>
+          <div class="saga-tag">07 // EXTERNAL READING LIST (NOT YET IN WIKI)</div>
+          <h2>下一座知識島嶼：建議補充的 Fandom Raw 條目</h2>
+        </div>
+        <span class="chapter-badge">工作流：點擊取得 Raw $\rightarrow$ 執行 Ingest</span>
+      </div>
+      <div class="slide-body">
+        <p style="font-size: 14.5px;">以下外部專題條目<strong>尚未收錄進 <code>wiki/</code> 正文</strong>。點擊右側按鈕開啟 <code>?action=raw</code> 原始碼後複製貼回對話框，即可自動存入 <code>raw/</code> 並執行 <strong>Wiki 化攝取流程</strong> 補齊缺口：</p>
+        <div class="ref-item">
+          <div>
+            <strong>1. One Piece Wiki: World（世界地理、四海與無風帶設定）</strong><br>
+            <span style="font-size: 13px;">補齊西海、南海具體島嶼、紅土大陸與無風帶（Calm Belt）物理結構。</span>
+          </div>
+          <a class="dl-btn" href="https://onepiece.fandom.com/wiki/World?action=raw" target="_blank" rel="noopener">⬇️ 取得 Raw 文本</a>
+        </div>
+        <div class="ref-item">
+          <div>
+            <strong>2. One Piece Wiki: Devil Fruit（惡魔果實完整分類與覺醒規則）</strong><br>
+            <span style="font-size: 13px;">擴充超人系、動物系、自然系與人造果實 SMILE 的詳細設定與圖鑑。</span>
+          </div>
+          <a class="dl-btn" href="https://onepiece.fandom.com/wiki/Devil_Fruit?action=raw" target="_blank" rel="noopener">⬇️ 取得 Raw 文本</a>
+        </div>
+        <div class="ref-item">
+          <div>
+            <strong>3. One Piece Wiki: Haki（三色霸氣進階應用與霸王色纏繞）</strong><br>
+            <span style="font-size: 13px;">補齊見聞色預見未來、武裝色內部破壞與霸王色纏繞之戰鬥設定。</span>
+          </div>
+          <a class="dl-btn" href="https://onepiece.fandom.com/wiki/Haki?action=raw" target="_blank" rel="noopener">⬇️ 取得 Raw 文本</a>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>狀態：嚴格遵循 Wiki 知識邊界 · 待執行下一輪 Ingest</span>
+        <div class="nav-dots"></div>
+        <span>Slide 8 / 8</span>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- 底部紀錄指針進度條 -->
+  <div class="progress-bar" id="progressBar"></div>
+
+  <!-- 講者備忘錄抽屜 -->
+  <div class="notes-drawer" id="notesDrawer">
+    <div class="notes-title">📝 演講者備忘錄（Speaker Notes — 按 N 鍵或上方按鈕關閉）</div>
+    <div id="notesContent"></div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const slides = Array.from(document.querySelectorAll('.slide'));
+      const progressBar = document.getElementById('progressBar');
+      const notesDrawer = document.getElementById('notesDrawer');
+      const notesContent = document.getElementById('notesContent');
+      const pageIndicator = document.getElementById('pageIndicator');
+      const btnPrev = document.getElementById('btnPrev');
+      const btnNext = document.getElementById('btnNext');
+      const btnNotes = document.getElementById('btnNotes');
+      const btnPrint = document.getElementById('btnPrint');
+      const themeBtns = Array.from(document.querySelectorAll('.theme-btn'));
+      let current = 0;
+
+      // 動態建立每頁底部的圓點跳轉導航
+      slides.forEach((slide, slideIdx) => {
+        const dotContainer = slide.querySelector('.nav-dots');
+        if (!dotContainer) return;
+        slides.forEach((_, dotIdx) => {
+          const dot = document.createElement('button');
+          dot.type = 'button';
+          dot.className = 'dot' + (dotIdx === slideIdx ? ' active' : '');
+          dot.title = '跳至第 ' + (dotIdx + 1) + ' 頁';
+          dot.addEventListener('click', function (e) {
+            e.stopPropagation();
+            updateSlide(dotIdx);
+          });
+          dotContainer.appendChild(dot);
+        });
+      });
+
+      function updateSlide(index) {
+        current = (index + slides.length) % slides.length;
+        slides.forEach((s, i) => {
+          s.classList.toggle('active', i === current);
+          const dots = s.querySelectorAll('.dot');
+          dots.forEach((d, di) => d.classList.toggle('active', di === current));
+        });
+        progressBar.style.width = (((current + 1) / slides.length) * 100) + '%';
+        pageIndicator.textContent = (current + 1) + ' / ' + slides.length;
+        notesContent.textContent = slides[current].getAttribute('data-notes') || '本頁無額外備忘錄。';
+      }
+
+      function nextSlide() { updateSlide(current + 1); }
+      function prevSlide() { updateSlide(current - 1); }
+      function toggleNotes() { notesDrawer.classList.toggle('open'); }
+
+      btnNext.addEventListener('click', function (e) { e.preventDefault(); nextSlide(); });
+      btnPrev.addEventListener('click', function (e) { e.preventDefault(); prevSlide(); });
+      btnNotes.addEventListener('click', function (e) { e.preventDefault(); toggleNotes(); });
+      btnPrint.addEventListener('click', function (e) { e.preventDefault(); window.print(); });
+
+      themeBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          const theme = btn.getAttribute('data-set-theme');
+          document.body.setAttribute('data-theme', theme);
+          themeBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+        });
+      });
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+          e.preventDefault();
+          nextSlide();
+        } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+          e.preventDefault();
+          prevSlide();
+        } else if (e.key.toLowerCase() === 'n') {
+          toggleNotes();
+        }
+      });
+
+      updateSlide(0);
+    });
+  </script>
+</body>
+</html>
