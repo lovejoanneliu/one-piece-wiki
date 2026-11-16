@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LLM Research Wiki | 偉大航道知識庫</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <style>
+    :root {
+      --bg-page: #EFE7D6;
+      --bg-paper: #F8F2E4;
+      --bg-card: #F1E7D0;
+      --grid-line: rgba(138, 102, 56, 0.09);
+      --text-main: #2A1B10;
+      --text-sub: #573F2B;
+      --accent-red: #B53028;
+      --accent-gold: #9E6E2B;
+      --border-color: #C7B28E;
+      --font-serif: "Noto Serif TC", "Songti TC", Georgia, serif;
+      --font-sans: "Noto Sans TC", "PingFang TC", -apple-system, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-page);
+      background-image:
+        linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+      background-size: 40px 40px;
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.65;
+    }
+
+    header {
+      background: var(--bg-paper);
+      border-bottom: 2.5px solid var(--accent-gold);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 16px rgba(42, 27, 16, 0.08);
+    }
+
+    .nav-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 14px 24px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-seal {
+      border: 2px solid var(--accent-red);
+      color: var(--accent-red);
+      font-weight: 900;
+      font-size: 11px;
+      padding: 2px 8px;
+      letter-spacing: 1.5px;
+      border-radius: 4px;
+    }
+
+    .brand h1 {
+      font-family: var(--font-serif);
+      font-size: 22px;
+      color: var(--text-main);
+    }
+
+    nav.tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: 1.5px solid var(--border-color);
+      color: var(--text-main);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-btn:hover { border-color: var(--accent-red); }
+    .tab-btn.active {
+      background: var(--accent-red);
+      border-color: var(--accent-red);
+      color: #FFFFFF;
+    }
+
+    main {
+      max-width: 1180px;
+      margin: 28px auto 60px;
+      padding: 0 24px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--bg-paper);
+      border: 1.5px solid var(--border-color);
+      border-top: 4px solid var(--accent-gold);
+      border-radius: 10px;
+      padding: 16px 20px;
+      box-shadow: 0 4px 12px rgba(42, 27, 16, 0.05);
+    }
+
+    .stat-num {
+      font-family: var(--font-serif);
+      font-size: 30px;
+      font-weight: 900;
+      color: var(--accent-red);
+    }
+
+    .stat-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-sub);
+    }
+
+    .filter-bar {
+      background: var(--bg-paper);
+      border: 1.5px solid var(--border-color);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .search-input {
+      flex: 1;
+      min-width: 240px;
+      padding: 8px 14px;
+      border: 1.5px solid var(--border-color);
+      border-radius: 8px;
+      background: #FFFDF8;
+      font-size: 14px;
+      color: var(--text-main);
+    }
+
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .tag-chip {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 4px 10px;
+      border-radius: 14px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      color: var(--text-sub);
+    }
+    .tag-chip.active, .tag-chip:hover {
+      background: var(--accent-gold);
+      color: #FFFFFF;
+      border-color: var(--accent-gold);
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    @media (max-width: 860px) {
+      .workspace { grid-template-columns: 1fr; }
+    }
+
+    .entry-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .entry-item {
+      background: var(--bg-paper);
+      border: 1.5px solid var(--border-color);
+      border-left: 4px solid var(--accent-gold);
+      border-radius: 8px;
+      padding: 14px 16px;
+      cursor: pointer;
+      transition: transform 0.15s, border-color 0.15s;
+    }
+
+    .entry-item:hover, .entry-item.selected {
+      border-left-color: var(--accent-red);
+      background: #FFFDF8;
+      transform: translateX(3px);
+    }
+
+    .entry-cat {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--accent-red);
+      letter-spacing: 1px;
+    }
+
+    .entry-title {
+      font-family: var(--font-serif);
+      font-size: 16px;
+      font-weight: 700;
+      margin: 4px 0;
+    }
+
+    .entry-meta {
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+
+    .reader-pane {
+      background: var(--bg-paper);
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      padding: 28px 34px;
+      box-shadow: 0 10px 28px rgba(42, 27, 16, 0.08);
+      min-height: 480px;
+    }
+
+    .reader-header {
+      border-bottom: 2px solid var(--accent-gold);
+      padding-bottom: 14px;
+      margin-bottom: 20px;
+    }
+
+    .reader-header h2 {
+      font-family: var(--font-serif);
+      font-size: 26px;
+      margin-top: 6px;
+    }
+
+    .reader-body h3 {
+      font-family: var(--font-serif);
+      color: var(--accent-red);
+      margin: 18px 0 8px;
+      font-size: 19px;
+    }
+
+    .reader-body p, .reader-body li {
+      margin-bottom: 10px;
+      color: var(--text-sub);
+      font-size: 15.5px;
+    }
+
+    .reader-body ul { padding-left: 22px; }
+
+    .formula-card {
+      background: var(--bg-card);
+      border: 1px solid var(--accent-gold);
+      border-left: 4px solid var(--accent-red);
+      padding: 14px 18px;
+      border-radius: 8px;
+      margin: 14px 0;
+      text-align: center;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0;
+      font-size: 14px;
+      background: var(--bg-card);
+    }
+    th {
+      border-top: 2px solid var(--text-main);
+      border-bottom: 1.5px solid var(--text-main);
+      padding: 8px 10px;
+      text-align: left;
+    }
+    td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    tr:last-child td { border-bottom: 2px solid var(--text-main); }
+
+    .action-link {
+      display: inline-block;
+      margin-top: 12px;
+      background: var(--accent-red);
+      color: #FFFFFF;
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 13.5px;
+      font-weight: 700;
+    }
+
+    footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 13px;
+      color: var(--text-sub);
+      border-top: 1px solid var(--border-color);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="nav-inner">
+      <div class="brand">
+        <span class="brand-seal">LOG POSE WIKI</span>
+        <h1>LLM 研究與世界觀知識庫</h1>
+      </div>
+      <nav class="tabs">
+        <button type="button" class="tab-btn active" data-cat="all">🧭 全部條目</button>
+        <button type="button" class="tab-btn" data-cat="papers">📄 論文精讀</button>
+        <button type="button" class="tab-btn" data-cat="methods">⚡ 核心技術</button>
+        <button type="button" class="tab-btn" data-cat="architectures">🏛️ 模型架構</button>
+        <button type="button" class="tab-btn" data-cat="syntheses">📜 深度綜述</button>
+        <button type="button" class="tab-btn" data-cat="presentations">🎞️ 專題簡報</button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-num">3</div>
+        <div class="stat-label">收錄論文條目 (wiki/papers)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">3</div>
+        <div class="stat-label">核心架構與方法 (architectures & methods)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">1</div>
+        <div class="stat-label">知識庫架構綜述 (wiki/syntheses)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">1</div>
+        <div class="stat-label">互動式 HTML 簡報 (presentations/)</div>
+      </div>
+    </section>
+
+    <section class="filter-bar">
+      <input type="text" id="searchInput" class="search-input" placeholder="🔍 搜尋論文標題、演算法（如 GRPO、RAG、Transformer、航海王）..." />
+      <div class="tag-list">
+        <span class="tag-chip active" data-tag="all">全部標籤</span>
+        <span class="tag-chip" data-tag="architecture">#architecture</span>
+        <span class="tag-chip" data-tag="reasoning">#reasoning</span>
+        <span class="tag-chip" data-tag="rl-alignment">#rl-alignment</span>
+        <span class="tag-chip" data-tag="rag-memory">#rag-memory</span>
+      </div>
+    </section>
+
+    <section class="workspace">
+      <div class="entry-list" id="entryList"></div>
+      <article class="reader-pane" id="readerPane"></article>
+    </section>
+  </main>
+
+  <footer>
+    Powered by <strong>AGENTS.md / CLAUDE.md</strong> · 嚴格溯源 LLM Wiki 知識庫架構 · Hosted on GitHub Pages
+  </footer>
+
+  <script>
+    const wikiData = [
+      {
+        id: "onepiece-presentation",
+        category: "presentations",
+        categoryLabel: "PRESENTATIONS // 互動式 HTML 簡報",
+        title: "偉大航道全景圖：《航海王》世界觀架構解析（8 頁完整簡報）",
+        tags: ["rag-memory", "architecture"],
+        source: "presentations/2026-11-16-OnePiece-Worldview.html",
+        summary: "嚴格基於現有 Wiki 館藏生成之 8 頁互動簡報，支援偉大航道羊皮紙／海軍白底／新世界暗黑三風格切換與 KaTeX 公式。",
+        html: `
+          <h3>簡報內容與互動特色</h3>
+          <ul>
+            <li><strong>嚴格溯源（Strict Wiki-Grounded）</strong>：100% 依據已收錄的《航海王》Fandom 文本編纂，並於文末列出可點擊取得 Raw 文本的建議補充文獻。</li>
+            <li><strong>內建三套視覺主題</strong>：預設「偉大航道古典海圖羊皮紙風」，支援一鍵切換海軍實驗室白底與新世界暗黑風。</li>
+          </ul>
+          <a class="action-link" href="presentations/2026-11-16-OnePiece-Worldview.html" target="_blank">🎞️ 開啟完整 HTML 簡報（全螢幕瀏覽）</a>
+        `
+      },
+      {
+        id: "fandom-schema",
+        category: "syntheses",
+        categoryLabel: "SYNTHESES // 知識庫架構深度綜述",
+        title: "從長篇敘事百科（航海王 Story Arcs）看階層式知識庫與長程記憶設計",
+        tags: ["rag-memory", "architecture"],
+        source: "wiki/syntheses/2026-11-16-Hierarchical-Wiki-Schema-From-Fandom.md",
+        summary: "將 Fandom 百科的 Saga / Arc / Cover Serials / Fillers 四層粒度模型映射至 LLM 長程記憶與知識圖譜架構。",
+        html: `
+          <h3>四層知識粒度切分模型</h3>
+          <table>
+            <thead><tr><th>百科層級</th><th>敘事功能</th><th>對應 LLM 知識庫設計</th></tr></thead>
+            <tbody>
+              <tr><td><strong>大篇章 (Saga)</strong></td><td>跨越多島嶼的宏觀目標（11 大 Saga）</td><td><strong>Domain / Era Summary</strong>（頂層路由）</td></tr>
+              <tr><td><strong>故事篇 (Arc)</strong></td><td>明確起訖邊界與 Key plot-points</td><td><strong>Atomic Paper Card</strong>（單篇論文卡片）</td></tr>
+              <tr><td><strong>封面連載 (Cover Serials)</strong></td><td>配角獨立支線（26 部正史支線）</td><td><strong>Sub-thread / Ablation Logs</strong></td></tr>
+              <tr><td><strong>原創過渡 (Fillers)</strong></td><td>動畫獨立短篇與總集篇</td><td><strong>Synthetic Checkpoints</strong>（不污染主幹事實）</td></tr>
+            </tbody>
+          </table>
+        `
+      },
+      {
+        id: "deepseek-r1",
+        category: "papers",
+        categoryLabel: "PAPERS // 論文單篇精讀",
+        title: "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via RL (2025)",
+        tags: ["reasoning", "rl-alignment"],
+        source: "raw/papers/2025-DeepSeek-R1.md",
+        summary: "證明僅透過大規模強化學習（GRPO）搭配可驗證獎勵，無需大量 SFT 冷啟動即可湧現長思維鏈與自我反思。",
+        html: `
+          <h3>1. 核心突破與訓練管線</h3>
+          <ul>
+            <li><strong>DeepSeek-R1-Zero</strong>：直接對 DeepSeek-V3-Base 進行純 RL 訓練，模型自發延長 Test-Time Compute 並出現自我驗證（Aha Moment）。</li>
+            <li><strong>DeepSeek-R1 四階段管線</strong>：少量 Long CoT 冷啟動 SFT &rarr; 面向推理的 GRPO RL &rarr; 拒絕採樣與通用 SFT &rarr; 全場景對齊 RL。</li>
+            <li><strong>推理蒸餾（Distillation）</strong>：將 R1 推理軌跡蒸餾至 Qwen/Llama 小模型（1.5B–70B），效果遠勝小模型直接做純 RL。</li>
+          </ul>
+          <h3>2. 關鍵基準數據對比</h3>
+          <table>
+            <thead><tr><th>評測基準</th><th>OpenAI o1-1217</th><th>DeepSeek-R1</th><th>R1-Distill-Qwen-32B</th></tr></thead>
+            <tbody>
+              <tr><td>AIME 2024 (Pass@1)</td><td>79.2%</td><td><strong>79.8%</strong></td><td>72.6%</td></tr>
+              <tr><td>MATH-500 (Pass@1)</td><td>96.4%</td><td><strong>97.3%</strong></td><td>94.3%</td></tr>
+              <tr><td>SWE-bench Verified</td><td>48.9%</td><td><strong>49.2%</strong></td><td>43.9%</td></tr>
+            </tbody>
+          </table>
+        `
+      },
+      {
+        id: "grpo",
+        category: "methods",
+        categoryLabel: "METHODS // 核心技術與方法論",
+        title: "Group Relative Policy Optimization (GRPO) 群組相對策略優化",
+        tags: ["rl-alignment", "reasoning"],
+        source: "wiki/methods/GRPO.md",
+        summary: "移除傳統 PPO 的 Critic Value Model，改以同組採樣輸出的平均獎勵作為基線計算相對優勢，大幅節省顯存。",
+        html: `
+          <h3>1. 核心機制：移除 Critic Model</h3>
+          <p>針對同一問題 $q$，從舊策略 $\\pi_{\\theta_{\\text{old}}}$ 採樣一組共 $G$ 個輸出 $\\{o_1, \\dots, o_G\\}$，直接以組內平均獎勵計算相對優勢：</p>
+          <div class="formula-card">
+            $$A_i = \\frac{r_i - \\text{mean}(\\{r_1, \\dots, r_G\\})}{\\text{std}(\\{r_1, \\dots, r_G\\})}$$
+          </div>
+          <h3>2. 目標函數</h3>
+          <div class="formula-card">
+            $$\\mathcal{J}_{\\text{GRPO}}(\\theta) = \\mathbb{E}\\left[ \\frac{1}{G} \\sum_{i=1}^{G} \\left( \\min\\left( \\frac{\\pi_\\theta(o_i|q)}{\\pi_{\\theta_{\\text{old}}}(o_i|q)} A_i, \\text{clip}(\\dots) A_i \\right) - \\beta \\mathbb{D}_{\\text{KL}}(\\pi_\\theta \\| \\pi_{\\text{ref}}) \\right) \\right]$$
+          </div>
+        `
+      },
+      {
+        id: "transformer",
+        category: "architectures",
+        categoryLabel: "ARCHITECTURES // 模型架構與家族",
+        title: "Attention Is All You Need — Transformer 核心架構 (2017)",
+        tags: ["architecture"],
+        source: "wiki/papers/2017-Vaswani-AttentionIsAllYouNeed.md",
+        summary: "徹底摒棄 RNN 與 CNN，以縮放點積自注意力機制（Self-Attention）奠定現代大型語言模型基石。",
+        html: `
+          <h3>1. 縮放點積注意力（Scaled Dot-Product Attention）</h3>
+          <div class="formula-card">
+            $$\\text{Attention}(Q, K, V) = \\text{softmax}\\left(\\frac{QK^T}{\\sqrt{d_k}}\\right)V$$
+          </div>
+          <h3>2. WMT 2014 英德翻譯實驗基準</h3>
+          <table>
+            <thead><tr><th>模型架構</th><th>BLEU 分數</th><th>訓練算力 (FLOPs)</th></tr></thead>
+            <tbody>
+              <tr><td>ConvS2S</td><td>25.16</td><td>$9.6 \\times 10^{18}$</td></tr>
+              <tr><td>Transformer (Base)</td><td>27.3</td><td>$3.3 \\times 10^{18}$</td></tr>
+              <tr><td><strong>Transformer (Big)</strong></td><td><strong>28.4</strong></td><td>$2.3 \\times 10^{19}$</td></tr>
+            </tbody>
+          </table>
+        `
+      },
+      {
+        id: "rag",
+        category: "methods",
+        categoryLabel: "METHODS // 檢索增強與記憶系統",
+        title: "Retrieval-Augmented Generation (RAG) 檢索增強生成 (2020)",
+        tags: ["rag-memory"],
+        source: "wiki/papers/2020-Lewis-RAG.md",
+        summary: "結合參數化記憶（Pre-trained Seq2Seq）與非參數化外部稠密向量索引，顯著降低幻覺並支持動態知識更新。",
+        html: `
+          <h3>1. 兩種核心架構變體</h3>
+          <ul>
+            <li><strong>RAG-Sequence</strong>：針對整段生成序列，檢索同一組 Top-$K$ 文件並計算邊際機率。</li>
+            <li><strong>RAG-Token</strong>：在生成每一個 Token 時動態切換參考不同的 Top-$K$ 檢索文件。</li>
+          </ul>
+          <h3>2. Natural Questions 開放域問答表現</h3>
+          <table>
+            <thead><tr><th>模型</th><th>記憶類型</th><th>Natural Questions (EM)</th></tr></thead>
+            <tbody>
+              <tr><td>T5-11B</td><td>純參數化（閉卷）</td><td>34.5</td></tr>
+              <tr><td>REALM</td><td>參數化 + 檢索</td><td>40.4</td></tr>
+              <tr><td><strong>RAG-Sequence</strong></td><td><strong>參數化 + 稠密檢索</strong></td><td><strong>44.5</strong></td></tr>
+            </tbody>
+          </table>
+        `
+      }
+    ];
+
+    document.addEventListener('DOMContentLoaded', function () {
+      let activeCategory = 'all';
+      let activeTag = 'all';
+      let selectedId = wikiData[0].id;
+
+      const searchInput = document.getElementById('searchInput');
+      const listEl = document.getElementById('entryList');
+      const pane = document.getElementById('readerPane');
+
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+          activeCategory = btn.getAttribute('data-cat');
+          document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          renderList();
+        });
+      });
+
+      document.querySelectorAll('.tag-chip').forEach(chip => {
+        chip.addEventListener('click', function () {
+          activeTag = chip.getAttribute('data-tag');
+          document.querySelectorAll('.tag-chip').forEach(c => c.classList.remove('active'));
+          chip.classList.add('active');
+          renderList();
+        });
+      });
+
+      searchInput.addEventListener('input', renderList);
+
+      function renderList() {
+        const q = searchInput.value.trim().toLowerCase();
+        const filtered = wikiData.filter(item => {
+          const matchCat = activeCategory === 'all' || item.category === activeCategory;
+          const matchTag = activeTag === 'all' || item.tags.includes(activeTag);
+          const matchQuery = !q || item.title.toLowerCase().includes(q) || item.summary.toLowerCase().includes(q);
+          return matchCat && matchTag && matchQuery;
+        });
+
+        if (filtered.length === 0) {
+          listEl.innerHTML = '<div class="entry-item">找不到符合條件的知識條目，請嘗試其他關鍵字。</div>';
+          return;
+        }
+
+        if (!filtered.some(i => i.id === selectedId)) {
+          selectedId = filtered[0].id;
+        }
+
+        listEl.innerHTML = filtered.map(item => `
+          <div class="entry-item ${item.id === selectedId ? 'selected' : ''}" data-id="${item.id}">
+            <div class="entry-cat">${item.categoryLabel}</div>
+            <div class="entry-title">${item.title}</div>
+            <div class="entry-meta">${item.tags.map(t => '#' + t).join(' ')}</div>
+          </div>
+        `).join('');
+
+        listEl.querySelectorAll('.entry-item[data-id]').forEach(el => {
+          el.addEventListener('click', function () {
+            selectedId = el.getAttribute('data-id');
+            renderList();
+          });
+        });
+
+        renderReader();
+      }
+
+      function renderReader() {
+        const item = wikiData.find(i => i.id === selectedId) || wikiData[0];
+        pane.innerHTML = `
+          <div class="reader-header">
+            <div class="entry-cat">${item.categoryLabel}</div>
+            <h2>${item.title}</h2>
+            <div class="entry-meta" style="margin-top:6px;">
+              溯源路徑：<code>${item.source}</code> ｜ 標籤：${item.tags.map(t => '#' + t).join(' ')}
+            </div>
+          </div>
+          <div class="reader-body">
+            <p><strong>核心摘要：</strong>${item.summary}</p>
+            ${item.html}
+          </div>
+        `;
+        if (window.renderMathInElement) {
+          renderMathInElement(pane, {
+            delimiters: [
+              {left: '$$', right: '$$', display: true},
+              {left: '$', right: '$', display: false}
+            ]
+          });
+        }
+      }
+
+      renderList();
+    });
+  </script>
+</body>
+</html>

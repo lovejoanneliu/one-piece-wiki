@@ -9,9 +9,6 @@
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
     onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
   <style>
-    /* =========================================================
-       三套《航海王》主題（預設：風格一 偉大航道・古典海圖羊皮紙風）
-       ========================================================= */
     :root, [data-theme="parchment"] {
       --bg-outer: #DCD0B8;
       --bg-slide: #F7F0E0;
@@ -19,8 +16,8 @@
       --grid-color: rgba(138, 102, 56, 0.11);
       --text-primary: #2A1B10;
       --text-secondary: #533B28;
-      --accent-main: #B53028;      /* 草帽赤紅 */
-      --accent-sub: #9E6E2B;       /* 羅盤古銅金 */
+      --accent-main: #B53028;
+      --accent-sub: #9E6E2B;
       --border-color: #C4AE88;
       --badge-bg: #E8DBC0;
       --gap-bg: rgba(181, 48, 40, 0.08);
@@ -75,7 +72,6 @@
       transition: background 0.3s ease;
     }
 
-    /* 頂部控制列：確保最高 z-index 與明確可點擊性 */
     .topbar {
       position: fixed;
       top: 12px;
@@ -125,7 +121,6 @@
       color: #FFFFFF;
     }
 
-    /* 16:9 簡報主畫布 */
     .deck-container {
       width: min(1220px, 95vw);
       height: min(690px, 82vh);
@@ -138,7 +133,6 @@
       width: 100%;
       height: 100%;
       background-color: var(--bg-slide);
-      /* 海圖經緯度網格 + 羅盤放射細紋 */
       background-image:
         radial-gradient(circle at 88% 18%, rgba(181, 48, 40, 0.06) 0%, transparent 32%),
         linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
@@ -156,7 +150,6 @@
 
     .slide.active { display: flex; }
 
-    /* 古典海圖雙線內框 + 四角羅盤飾角 */
     .slide::before {
       content: "";
       position: absolute;
@@ -167,7 +160,6 @@
       opacity: 0.85;
     }
 
-    /* 頁首標頭 */
     .slide-header {
       border-bottom: 2px solid var(--accent-sub);
       padding-bottom: 10px;
@@ -222,7 +214,6 @@
       color: var(--text-secondary);
     }
 
-    /* 封面懸賞令／航海日誌專屬設計 */
     .cover-center {
       text-align: center;
       align-items: center;
@@ -266,7 +257,6 @@
       color: var(--text-primary);
     }
 
-    /* 雙欄與三欄卡片 */
     .two-col {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -300,7 +290,6 @@
     li { margin-bottom: 6px; }
     strong { color: var(--text-primary); }
 
-    /* 公式高亮框 */
     .formula-box {
       background: var(--bg-card);
       border: 1.5px solid var(--accent-sub);
@@ -312,7 +301,6 @@
       color: var(--text-primary);
     }
 
-    /* 知識缺口警示框 */
     .gap-box {
       background: var(--gap-bg);
       border: 1.5px dashed var(--accent-main);
@@ -322,7 +310,6 @@
       color: var(--text-primary);
     }
 
-    /* 學術三線表 + Fandom 篇章代表色條 */
     table {
       width: 100%;
       border-collapse: collapse;
@@ -352,7 +339,6 @@
       vertical-align: middle;
     }
 
-    /* 下載文獻卡片 */
     .ref-item {
       background: var(--bg-card);
       border: 1px solid var(--border-color);
@@ -375,7 +361,6 @@
     }
     .dl-btn:hover { opacity: 0.9; }
 
-    /* 頁尾與紀錄指針進度列 */
     .slide-footer {
       display: flex;
       justify-content: space-between;
@@ -417,7 +402,6 @@
       z-index: 9999;
     }
 
-    /* 講者備忘錄抽屜 */
     .notes-drawer {
       display: none;
       position: fixed;
@@ -453,7 +437,6 @@
 </head>
 <body data-theme="parchment">
 
-  <!-- 頂部控制列 -->
   <div class="topbar">
     <div class="theme-switcher">
       <button type="button" class="theme-btn active" data-set-theme="parchment">🧭 偉大航道海圖</button>
@@ -461,6 +444,7 @@
       <button type="button" class="theme-btn" data-set-theme="newworld">🌊 新世界暗黑</button>
     </div>
     <div class="controls-right">
+      <a class="ctrl-btn" href="../index.html" style="text-decoration:none;">🏠 返回知識庫首頁</a>
       <button type="button" class="ctrl-btn" id="btnNotes">📝 講者筆記 (N)</button>
       <button type="button" class="ctrl-btn" id="btnPrint">🖨️ 匯出 PDF</button>
       <button type="button" class="ctrl-btn" id="btnPrev">← 上一頁</button>
@@ -469,10 +453,8 @@
     </div>
   </div>
 
-  <!-- 簡報主畫布 -->
   <div class="deck-container">
 
-    <!-- Slide 1: 封面 -->
     <section class="slide active" data-notes="本簡報嚴格依據目前知識庫已收錄的《航海王》Fandom 條目編纂（涵蓋 3,240 個條目導航、11 大故事篇章、26 部短期集中封面連載與 16 個動畫原創篇）。">
       <div class="slide-body cover-center">
         <div class="wanted-seal">LOG POSE ARCHIVE · STRICT WIKI-GROUNDED EDITION</div>
@@ -486,12 +468,11 @@
       </div>
       <div class="slide-footer">
         <span>溯源：[[航海王wiki首頁]] · [[2026-11-16-OnePiece-StoryArcs-Fandom]]</span>
-        <div class="nav-dots" id="dots1"></div>
+        <div class="nav-dots"></div>
         <span>Slide 1 / 8</span>
       </div>
     </section>
 
-    <!-- Slide 2: 海洋地理與多維度空間架構 -->
     <section class="slide" data-notes="地理結構整理自首頁世界觀選單與故事篇章（東海篇、阿拉巴斯坦篇、空島篇、水之七島篇、魚人島篇、蛋頭島與艾爾巴夫篇）。">
       <div class="slide-header">
         <div>
@@ -530,7 +511,6 @@
       </div>
     </section>
 
-    <!-- Slide 3: 多元種族與世界政府統治架構 -->
     <section class="slide" data-notes="種族與世界政府最高層資訊提取自魚人島篇、夏波帝諸島篇、世界會議篇與蛋頭島／艾爾巴夫篇摘要。">
       <div class="slide-header">
         <div>
@@ -566,7 +546,6 @@
       </div>
     </section>
 
-    <!-- Slide 4: 海上三大勢力與陣營演變 -->
     <section class="slide" data-notes="展現從頂上戰爭、世界會議廢除七武海，到和之國戰役後新四皇與十字公會成立的動態勢力更迭。">
       <div class="slide-header">
         <div>
@@ -615,7 +594,6 @@
       </div>
     </section>
 
-    <!-- Slide 5: 超自然力量體系（惡魔果實 × 霸氣 × 科學武器） -->
     <section class="slide" data-notes="歸納自惡魔果實專題導航與各篇章關鍵設定（含自然系、動物系幻獸種、人造果實 SMILE、果實覺醒與三色霸氣）。">
       <div class="slide-header">
         <div>
@@ -659,7 +637,6 @@
       </div>
     </section>
 
-    <!-- Slide 6: 空白的 100 年與拉乎德爾航線公式 -->
     <section class="slide" data-notes="整合阿拉巴斯坦篇、魚人島篇、佐烏篇、和之國篇與蛋頭島篇關於歷史本文、古代兵器與神之谷事件的關鍵紀錄。">
       <div class="slide-header">
         <div>
@@ -697,8 +674,7 @@
       </div>
     </section>
 
-    <!-- Slide 7: 敘事時間軸與 Fandom 篇章結構表 -->
-    <section class="slide" data-notes="完整對照你提供的 Fandom Wiki 故事篇章（Story Arcs）雙紀元 11 大篇章結構與扉頁連載體系。">
+    <section class="slide" data-notes="完整對照 Fandom Wiki 故事篇章（Story Arcs）雙紀元 11 大篇章結構與扉頁連載體系。">
       <div class="slide-header">
         <div>
           <div class="saga-tag">06 // CHRONOLOGY & SAGA TAXONOMY</div>
@@ -758,7 +734,6 @@
       </div>
     </section>
 
-    <!-- Slide 8: 建議補充文獻（可點擊取得 Raw 並執行 Wiki 化） -->
     <section class="slide" data-notes="本頁文獻尚未進入 wiki/ 正文，點擊右側按鈕可直接開啟 Fandom Raw 原始碼頁面，複製貼回對話框即可自動存入 raw/ 並擴充知識庫。">
       <div class="slide-header">
         <div>
@@ -800,10 +775,8 @@
 
   </div>
 
-  <!-- 底部紀錄指針進度條 -->
   <div class="progress-bar" id="progressBar"></div>
 
-  <!-- 講者備忘錄抽屜 -->
   <div class="notes-drawer" id="notesDrawer">
     <div class="notes-title">📝 演講者備忘錄（Speaker Notes — 按 N 鍵或上方按鈕關閉）</div>
     <div id="notesContent"></div>
@@ -823,7 +796,6 @@
       const themeBtns = Array.from(document.querySelectorAll('.theme-btn'));
       let current = 0;
 
-      // 動態建立每頁底部的圓點跳轉導航
       slides.forEach((slide, slideIdx) => {
         const dotContainer = slide.querySelector('.nav-dots');
         if (!dotContainer) return;
